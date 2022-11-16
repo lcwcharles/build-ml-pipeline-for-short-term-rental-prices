@@ -24,11 +24,11 @@ def go(args):
     ######################
     # YOUR CODE HERE     #
     ######################
-    logger.info('Downloading artifact {}',args.input_artifact)
+    logger.info('Downloading artifact %s',args.input_artifact)
     local_path = run.use_artifact(args.input_artifact).file()
     df = pd.read_csv(local_path)
 
-    logger.info("Reading artifact")
+    logger.info("Dropping outliers")
     # Drop outliers
     min_price = args.min_price
     max_price = args.max_price
@@ -41,9 +41,10 @@ def go(args):
     # Convert last_review to datetime
     df['last_review'] = pd.to_datetime(df['last_review'])
     
-    logger.info('Saving the cleaned data to {}',)
+    logger.info('Saving the cleaned data to clean_sample.csv',)
     df.to_csv("clean_sample.csv", index=False)
 
+    logger.info("Uploading artifact to W&B")
     artifact = wandb.Artifact(
         args.output_artifact,
         type=args.output_type,
@@ -51,7 +52,7 @@ def go(args):
     )
     artifact.add_file("clean_sample.csv")
     
-    logger.info('Logging the artifact')
+    logger.info('Logging artifact')
     run.log_artifact(artifact)
 
 if __name__ == "__main__":
